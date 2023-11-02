@@ -1,4 +1,4 @@
-export type CustomFieldType = {
+export type CustomFieldsResponse = {
     _total_items: number;
     _page:        number;
     _page_count:  number;
@@ -10,7 +10,7 @@ type Embedded = {
     custom_fields: CustomField[];
 }
 
-type CustomField = {
+export type CustomField = {
     id:                number;
     name:              string;
     type:              Type;

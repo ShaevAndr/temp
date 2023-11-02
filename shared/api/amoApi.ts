@@ -1,4 +1,6 @@
 import queryString from "query-string"
+import { CustomField, CustomFieldsResponse } from "./types/fields.types"
+import { Lead, LeadsTypeResponse } from "./types/leads.type"
 
 type RequestParams = {
     page?: number,
@@ -6,10 +8,6 @@ type RequestParams = {
     filters?: string[],
 }
 
-type CustomFields = {
-    type: string,
-    name: string
-}
 
 type CustomFieldNames = {
     [key:string]:string[]
@@ -20,17 +18,18 @@ function getQueryString(entity: string, params:RequestParams): string {
     return `api/v4/${entity}?page=${queryParams}`
 }
 
-function getCustomFieldNames (response:CustomFields[]): CustomFieldNames{
-    const names = response.map(field=>field.name)
-    const type = response[0].type
+function getCustomFieldNames (fields:CustomField[]): CustomFieldNames{
+    const names = fields.map(field=>field.name)
+    const type = fields[0].type
     return {[type]:names} 
 }
 
-async function getCustomFields(params: RequestParams): Promise<CustomFields[]|[]> {
+async function getCustomFields(params: RequestParams): Promise<CustomField[]|[]> {
     try {
         const queryString = getQueryString('leads/custom_fields', params)
-        const response:CustomFields= await fetch(queryString).then(data => data.json())
-        return getCustomFieldNames(response)
+        const response:CustomFieldsResponse= await fetch(queryString).then(data => data.json())
+        const customFields = [...response._embedded.custom_fields]
+        return customFields
     } catch (err) {
         return []
     }
@@ -43,6 +42,14 @@ async function getCustomFields(params: RequestParams): Promise<CustomFields[]|[]
 //     callback(subdomain)
 
 // }
-console.log(getCustomFields(
-    { filters: [{ 'filter[type][0]': 'text' }] },
-))
+
+async function getDeals(params:RequestParams):Promise<Lead[]|[]> {
+    try {
+        const queryString = getQueryString('leads/', params)
+        const response:LeadsTypeResponse= await fetch(queryString).then(data => data.json())
+        const leads = [...response._embedded.leads]
+        return leads
+    } catch (err) {
+        return []
+    }
+}

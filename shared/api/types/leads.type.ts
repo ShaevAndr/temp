@@ -1,4 +1,4 @@
-export type LeadsRequestType = {
+export type LeadsTypeResponse = {
     _page:     number;
     _links:    Links;
     _embedded: LeadsEmbedded;
