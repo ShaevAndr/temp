@@ -1,28 +1,39 @@
+import queryString from "query-string"
+
 type RequestParams = {
     page?: number,
     limit?: number,
     filters?: string[],
 }
 
-function createFilterString(filters: Filters[]): string {
-    let result = ''
-    for (let filter of filters) {
-        Object.keys(filter).map(key => result += `&${key}=${filter[key]}`)
+type CustomFields = {
+    type: string,
+    name: string
+}
+
+type CustomFieldNames = {
+    [key:string]:string[]
+}
+
+function getQueryString(entity: string, params:RequestParams): string {
+    const queryParams = queryString.stringify(params, {arrayFormat:"index"})
+    return `api/v4/${entity}?page=${queryParams}`
+}
+
+function getCustomFieldNames (response:CustomFields[]): CustomFieldNames{
+    const names = response.map(field=>field.name)
+    const type = response[0].type
+    return {[type]:names} 
+}
+
+async function getCustomFields(params: RequestParams): Promise<CustomFields[]|[]> {
+    try {
+        const queryString = getQueryString('leads/custom_fields', params)
+        const response:CustomFields= await fetch(queryString).then(data => data.json())
+        return getCustomFieldNames(response)
+    } catch (err) {
+        return []
     }
-    return result
-}
-
-function getQueryString(entity: string, otherParams: string, page: number = 1, limit: number = 250): string {
-    return `api/v4/${entity}?page=${page}&limit=${limit}${otherParams}`
-}
-
-function getCustomFields(params: RequestParams): string {
-    const filters = params.filters?.length ? createFilterString(params.filters) : ''
-    let page = params.page ? params.page : 1
-    const limit = params.limit ? params.limit : 250
-    const queryString = getQueryString('leads/custom_fields', filters, page, limit)
-    // const res = fetch(queryString).then(data => data.json())
-    return queryString
 
 }
 
